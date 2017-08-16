@@ -1,0 +1,11 @@
+# ignore autosaved files
+*~
+
+# ignore all through compilation generated files
+*.ko
+*.o
+*.cmd
+*.symvers
+*.mod.c
+*.order
+.tmp_versions/
