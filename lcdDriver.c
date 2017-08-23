@@ -18,11 +18,13 @@
 #include <linux/kernel.h>         // Contains types, macros, functions for the kernel
 #include <linux/string.h>
 
-
 MODULE_LICENSE("GPL");                  ///< The license type -- this affects available functionality
 MODULE_AUTHOR("Christoph Gadinger");    ///< The author -- visible when you use modinfo
 MODULE_DESCRIPTION("lcd Module");       ///< The description -- see modinfo
 MODULE_VERSION("17.08.14");             ///< A version number to inform users
+
+
+
 
 
 /** @brief The LKM initialization function
@@ -38,6 +40,8 @@ static int __init lcddrv_init(void){
   if(retVal) {
     return retVal;
   }
+
+  
   
   // 1.    : fourbitmode
   // 2.    : rs_pinNr

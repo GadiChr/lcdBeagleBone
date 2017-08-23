@@ -1,6 +1,6 @@
 obj-m := lcdDriverko.o
 
-lcdDriverko-objs := lcdroutines.o devroutines.o lcdDriver.o
+lcdDriverko-objs := lcdroutines.o devroutines.o classAttrRoutines.o lcdDriver.o
 
 COMPFLAGS:= -Wall
 
