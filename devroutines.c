@@ -3,7 +3,7 @@
 
 static int    majorNumber;                  // Stores the device number -- determined automatically
 static char   message_passed[100] = {0};    // Memory for the string that is passed from userspace
-static short  size_of_message_passed;       // Used to remember the size of the string stored
+static size_t size_of_message_passed;       // Used to remember the size of the string stored
 static int    numberOpens = 0;              // Counts the number of times the device is opened
 static struct class*  lcdClass  = NULL;     // The device-driver class struct pointer
 static struct device* lcdDevice = NULL;     // The device-driver device struct pointer
@@ -104,19 +104,18 @@ static int dev_open(struct inode *inodep, struct file *filep){
 /** 
  *  This function is called whenever device is being read from user space
  */
-static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
-  int error_count = 0;
-  
-  error_count = copy_to_user(buffer, message_passed, size_of_message_passed);
+static ssize_t dev_read(struct file *filep, char *buffer, size_t to_copy, loff_t *offset){
+  unsigned long not_copied;
 
-  if (error_count==0){
-    printk(KERN_INFO "Lcd: Sent %d characters to the user\n", size_of_message_passed);
-    return 0;
+  to_copy = min(to_copy, size_of_message_passed);
+  if((not_copied = copy_to_user(buffer, message_passed, to_copy))){
+    printk(KERN_INFO "Lcd: Failed to send %lu characters\n", not_copied);
   }
-  else {
-    printk(KERN_INFO "Lcd: Failed to send %d characters to the user\n", error_count);
-    return -EFAULT;
-  }
+  
+  printk(KERN_INFO "Lcd: Sent %d characters to the user\n", to_copy);
+  *offset += to_copy - not_copied;
+
+  return to_copy - not_copied;
 }
 
 /** 

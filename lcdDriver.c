@@ -24,9 +24,6 @@ MODULE_DESCRIPTION("lcd Module");       ///< The description -- see modinfo
 MODULE_VERSION("17.08.14");             ///< A version number to inform users
 
 
-
-
-
 /** @brief The LKM initialization function
  *  The static keyword restricts the visibility of the function to within this C file. The __init
  *  macro means that for a built-in driver (not a LKM) the function is only used at initialization
@@ -40,8 +37,6 @@ static int __init lcddrv_init(void){
   if(retVal) {
     return retVal;
   }
-
-  
   
   // 1.    : fourbitmode
   // 2.    : rs_pinNr
@@ -49,11 +44,15 @@ static int __init lcddrv_init(void){
   // 4.    : enable_pinNr
   // [5-12]: data_pinNr[0-7]
   //  lcd_init(true, 66, 67, 69, 68, 45, 44, 26, 47, 46, 27, 65);
-  lcd_init(false, 66, 67, 69, 68, 45, 44, 26, 47, 46, 27, 65);
+  lcd_init(20, 2, false, 66, 67, 69, 68, 45, 44, 26, 47, 46, 27, 65);
   
-  lcd_update("  *     LCD     *  \n  * initialized *");
   lcd_cursor();
-  lcd_blink();
+  //  lcd_blink();
+  //  lcd_rightToLeft();
+  //  lcd_autoscroll();
+  //  lcd_scrollDisplayLeft();
+  lcd_update("  *     LCD     *  \n  * initialized *");
+  
   printk(KERN_INFO "Lcd: lcd initialization complete\n");
   
   return 0;
