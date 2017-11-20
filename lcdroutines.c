@@ -229,9 +229,9 @@ void lcd_begin(unsigned char cols, unsigned char lines, unsigned char dotsize){
 }
 
 
-/***** high level commands, for the user ******/
+/***** high level commands ******/
 
-
+// Control cursor position
 void lcd_setCursor(unsigned char col, unsigned char row)
 {
   const size_t max_lines = sizeof(_cursor.row_offsets) / sizeof(*_cursor.row_offsets);
@@ -242,6 +242,7 @@ void lcd_setCursor(unsigned char col, unsigned char row)
     row = _cursor.row_max - 1;    // we count rows starting w/0
   }
 
+  _cursor.col = col;
   _cursor.row = row;
   
   lcd_command(LCD_SETDDRAMADDR | (col + _cursor.row_offsets[row]));
@@ -259,12 +260,10 @@ void lcd_noDisplay() {
   _display.control &= ~LCD_DISPLAYON;
   lcd_command(LCD_DISPLAYCONTROL | _display.control);
 }
-
 void lcd_display(){
   _display.control |= LCD_DISPLAYON;
   lcd_command(LCD_DISPLAYCONTROL | _display.control);
 }
-
 bool lcd_isDisplayOn(){
   return (_display.control & LCD_DISPLAYON) ? true : false;
 }
@@ -275,68 +274,66 @@ void lcd_noCursor() {
   _display.control &= ~LCD_CURSORON;
   lcd_command(LCD_DISPLAYCONTROL | _display.control);
 }
-
 void lcd_cursor() {
   _display.control |= LCD_CURSORON;
   lcd_command(LCD_DISPLAYCONTROL | _display.control);
 }
-
 bool lcd_isCursorOn(){
   return (_display.control & LCD_CURSORON) ? true : false;
 }
 
 
-// Turn on and off the blinking cursor
+// Turn the blinking cursor on/off
 void lcd_noBlink() {
   _display.control &= ~LCD_BLINKON;
   lcd_command(LCD_DISPLAYCONTROL | _display.control);
 }
-
 void lcd_blink() {
   _display.control |= LCD_BLINKON;
   lcd_command(LCD_DISPLAYCONTROL | _display.control);
 }
-
 bool lcd_isBlinkOn(){
   return (_display.control & LCD_BLINKON) ? true : false;
 }
 
+// This will scroll text and keeps the cursor on its column
+void lcd_autoscroll(void) {
+  _display.mode |= LCD_ENTRYSHIFTINCREMENT;
+  lcd_command(LCD_ENTRYMODESET | _display.mode);
+}
+// Instead of scroll text the cursor position gets increased 
+void lcd_noAutoscroll(void) {
+  _display.mode &= ~LCD_ENTRYSHIFTINCREMENT;
+  lcd_command(LCD_ENTRYMODESET | _display.mode);
+}
+bool lcd_isAutoscroll(void){
+  return (_display.mode & LCD_ENTRYSHIFTINCREMENT) ? true : false;
+}
 
 // These commands scroll the display without changing the RAM
 void lcd_scrollDisplayLeft(void) {
   lcd_command(LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVELEFT);
 }
-
 void lcd_scrollDisplayRight(void) {
   lcd_command(LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVERIGHT);
 }
+
 
 // This is for text that flows Left to Right
 void lcd_leftToRight(void) {
   _display.mode |= LCD_ENTRYLEFT;
   lcd_command(LCD_ENTRYMODESET | _display.mode);
 }
-
 // This is for text that flows Right to Left
 void lcd_rightToLeft(void) {
   _display.mode &= ~LCD_ENTRYLEFT;
   lcd_command(LCD_ENTRYMODESET | _display.mode);
 }
-
-// This will 'right justify' text from the cursor
-void lcd_autoscroll(void) {
-  _display.mode |= LCD_ENTRYSHIFTINCREMENT;
-  lcd_command(LCD_ENTRYMODESET | _display.mode);
+bool lcd_isLeftToRight(void){
+  return (_display.mode & LCD_ENTRYLEFT) ? true : false;
 }
 
-// This will 'left justify' text from the cursor
-void lcd_noAutoscroll(void) {
-  _display.mode &= ~LCD_ENTRYSHIFTINCREMENT;
-  lcd_command(LCD_ENTRYMODESET | _display.mode);
-}
-
-// Allows us to fill the first 8 CGRAM locations
-// with custom characters
+// Fill the first 8 CGRAM locations with custom characters
 void lcd_createChar(unsigned char location, unsigned char charmap[]) {
   int i;
   location &= 0x7; // we only have 8 locations 0-7
@@ -348,18 +345,17 @@ void lcd_createChar(unsigned char location, unsigned char charmap[]) {
 
 void lcd_clear(void){
   lcd_command(LCD_CLEARDISPLAY);   // clear display, set cursor to zero
-  mdelay(2);                    // this command takes a long time!
+  mdelay(2);                       // this command takes a long time!
 }
 
 void lcd_home(){
   lcd_command(LCD_RETURNHOME);     // set the cursor to zero
-  mdelay(2);                    // this command takes a long time!
+  mdelay(2);                       // this command takes a long time!
 }
 
 void lcd_print(const char *str){
   lcd_printn((char *)str, strlen(str));
 }
-
 void lcd_printn(char *str, size_t n){
   int i = 0;
   while( i < n && str[i] != '\0' ){
@@ -374,8 +370,6 @@ void lcd_update(char *str){
 
 void lcd_updaten(char *str, size_t n){
 
-  // @TODO: rewrite this function don't check escape-characters
-  
   // iterate over the entire message
   while (n > 0) {
     // treat escape sequences separately
@@ -419,8 +413,7 @@ void lcd_updaten(char *str, size_t n){
       _cursor.row++;
       if(_cursor.row >= _cursor.row_max){
 	_cursor.row = 0;
-      }
-      
+      }    
       lcd_setCursor(_cursor.col, _cursor.row);
     }
   }
@@ -441,6 +434,13 @@ void lcd_command(unsigned char value){
 
 void lcd_write(unsigned char value){
   _cursor.col++;
+  if(_cursor.col >= _cursor.col_max){
+    _cursor.col = 0;
+    _cursor.row++;
+  }
+  if(_cursor.row >= _cursor.row_max){
+    _cursor.row = 0;
+  }
   lcd_send(value, LCD_HIGH);
 }
 

@@ -53,7 +53,7 @@ static int __init lcddrv_init(void){
   //  lcd_scrollDisplayLeft();
   lcd_update("  *     LCD     *  \n  * initialized *");
   
-  printk(KERN_INFO "Lcd: lcd initialization complete\n");
+  printk(KERN_INFO "Lcd: _init success\n");
   
   return 0;
 }
@@ -67,7 +67,7 @@ static void __exit lcddrv_exit(void){
 
   dev_destroy();
   
-  printk(KERN_INFO "Lcd: Goodbye from the LKM!\n");
+  printk(KERN_INFO "Lcd: _exit success\n");
 }
 
 /** @brief A module must use the module_init() module_exit() macros from linux/init.h, which

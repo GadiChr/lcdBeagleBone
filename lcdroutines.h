@@ -84,12 +84,17 @@ void lcd_noCursor(void);
 void lcd_cursor(void);
 bool lcd_isCursorOn(void);
 
-void lcd_scrollDisplayLeft(void);
-void lcd_scrollDisplayRight(void);
-void lcd_leftToRight(void);
-void lcd_rightToLeft(void);
 void lcd_autoscroll(void);
 void lcd_noAutoscroll(void);
+bool lcd_isAutoscroll(void);
+
+void lcd_scrollDisplayLeft(void);
+void lcd_scrollDisplayRight(void);
+
+void lcd_leftToRight(void);
+void lcd_rightToLeft(void);
+bool lcd_isLeftToRight(void);
+
 void lcd_createChar(unsigned char, unsigned char[]);
 
 void lcd_setCursor(unsigned char, unsigned char);
